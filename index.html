@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goal Tracker Tabs</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    .tabs { display: flex; justify-content: center; margin-bottom: 20px; }
+    .tab { padding: 10px 20px; cursor: pointer; background: #ddd; margin: 0 5px; border-radius: 5px; }
+    .tab.active { background: #4CAF50; color: white; }
+    .tab-content { display: none; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .tab-content.active { display: block; }
+    input[type="text"] { padding: 6px; width: 70%; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 6px 10px; border: none; border-radius: 5px; background: #4CAF50; color: white; cursor: pointer; }
+    ul { list-style: none; padding-left: 0; }
+    li { padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+    li button { background: red; margin-left: 10px; }
+    .completed { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+
+  <h1>Goal Tracker</h1>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="openTab('monthly')">Monthly</div>
+    <div class="tab" onclick="openTab('weekly')">Weekly</div>
+    <div class="tab" onclick="openTab('daily')">Daily</div>
+  </div>
+
+  <!-- Monthly -->
+  <div id="monthly" class="tab-content active">
+    <h2>Monthly Goals</h2>
+    <input type="text" id="monthly-input" placeholder="Enter monthly goal">
+    <button onclick="addGoal('monthly')">Add</button>
+    <ul id="monthly-list"></ul>
+  </div>
+
+  <!-- Weekly -->
+  <div id="weekly" class="tab-content">
+    <h2>Weekly Goals</h2>
+    <input type="text" id="weekly-input" placeholder="Enter weekly goal">
+    <button onclick="addGoal('weekly')">Add</button>
+    <ul id="weekly-list"></ul>
+  </div>
+
+  <!-- Daily -->
+  <div id="daily" class="tab-content">
+    <h2>Daily Tasks</h2>
+    <input type="text" id="daily-input" placeholder="Enter daily task">
+    <button onclick="addGoal('daily')">Add</button>
+    <ul id="daily-list"></ul>
+  </div>
+
+  <script>
+    // Open tab
+    function openTab(tabName) {
+      const tabs = document.querySelectorAll('.tab-content');
+      const tabButtons = document.querySelectorAll('.tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      tabButtons.forEach(b => b.classList.remove('active'));
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Add goal
+    function addGoal(type) {
+      const input = document.getElementById(`${type}-input`);
+      const value = input.value.trim();
+      if (!value) return;
+
+      let goals = JSON.parse(localStorage.getItem(type)) || [];
+      goals.push({ text: value, completed: false });
+      localStorage.setItem(type, JSON.stringify(goals));
+
+      input.value = '';
+      renderGoals(type);
+    }
+
+    // Remove goal
+    function removeGoal(type, index) {
+      let goals = JSON.parse(localStorage.getItem(type)) || [];
+      goals.splice(index, 1);
+      localStorage.setItem(type, JSON.stringify(goals));
+      renderGoals(type);
+    }
+
+    // Toggle complete
+    function toggleComplete(type, index) {
+      let goals = JSON.parse(localStorage.getItem(type)) || [];
+      goals[index].completed = !goals[index].completed;
+      localStorage.setItem(type, JSON.stringify(goals));
+      renderGoals(type);
+    }
+
+    // Render goals
+    function renderGoals(type) {
+      const list = document.getElementById(`${type}-list`);
+      list.innerHTML = '';
+      let goals = JSON.parse(localStorage.getItem(type)) || [];
+      goals.forEach((goal, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span onclick="toggleComplete('${type}', ${index})" class="${goal.completed ? 'completed' : ''}">${goal.text}</span>
+                        <button onclick="removeGoal('${type}', ${index})">X</button>`;
+        list.appendChild(li);
+      });
+    }
+
+    // Load all goals on page load
+    ['monthly', 'weekly', 'daily'].forEach(renderGoals);
+  </script>
+
+</body>
+</html>
