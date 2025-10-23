@@ -3,60 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Goal Tracker Tabs</title>
+  <title>Goal Tracker with Password</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
     h1 { text-align: center; margin-bottom: 20px; }
-    .tabs { display: flex; justify-content: center; margin-bottom: 20px; }
-    .tab { padding: 10px 20px; cursor: pointer; background: #ddd; margin: 0 5px; border-radius: 5px; }
+
+    /* Tabs */
+    .tabs { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { padding: 10px 20px; cursor: pointer; background: #ddd; margin: 5px; border-radius: 5px; transition: 0.3s; }
     .tab.active { background: #4CAF50; color: white; }
     .tab-content { display: none; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     .tab-content.active { display: block; }
-    input[type="text"] { padding: 6px; width: 70%; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; }
+
+    /* Inputs */
+    input[type="text"], input[type="password"] { padding: 6px; width: 70%; margin-right: 5px; border-radius: 5px; border: 1px solid #ccc; }
     button { padding: 6px 10px; border: none; border-radius: 5px; background: #4CAF50; color: white; cursor: pointer; }
+    button.logout { background: #f44336; float: right; }
+
+    /* Lists */
     ul { list-style: none; padding-left: 0; }
     li { padding: 5px 0; display: flex; justify-content: space-between; align-items: center; }
     li button { background: red; margin-left: 10px; }
     .completed { text-decoration: line-through; color: gray; }
+
+    /* Password screen */
+    #password-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 90vh; text-align: center;
+    }
+    #tracker { display: none; }
   </style>
 </head>
 <body>
 
-  <h1>Goal Tracker</h1>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="openTab('monthly')">Monthly</div>
-    <div class="tab" onclick="openTab('weekly')">Weekly</div>
-    <div class="tab" onclick="openTab('daily')">Daily</div>
+  <!-- Password screen -->
+  <div id="password-screen">
+    <h1>🔒 Secure Goal Tracker</h1>
+    <p id="password-message"></p>
+    <input type="password" id="password-input" placeholder="Enter password">
+    <button onclick="checkPassword()">Enter</button>
   </div>
 
-  <!-- Monthly -->
-  <div id="monthly" class="tab-content active">
-    <h2>Monthly Goals</h2>
-    <input type="text" id="monthly-input" placeholder="Enter monthly goal">
-    <button onclick="addGoal('monthly')">Add</button>
-    <ul id="monthly-list"></ul>
-  </div>
+  <!-- Main Tracker -->
+  <div id="tracker">
+    <h1>Goal Tracker</h1>
 
-  <!-- Weekly -->
-  <div id="weekly" class="tab-content">
-    <h2>Weekly Goals</h2>
-    <input type="text" id="weekly-input" placeholder="Enter weekly goal">
-    <button onclick="addGoal('weekly')">Add</button>
-    <ul id="weekly-list"></ul>
-  </div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="openTab('yearly')">Y</div>
+      <div class="tab" onclick="openTab('monthly')">M</div>
+      <div class="tab" onclick="openTab('weekly')">W</div>
+      <div class="tab" onclick="openTab('daily')">D</div>
+    </div>
 
-  <!-- Daily -->
-  <div id="daily" class="tab-content">
-    <h2>Daily Tasks</h2>
-    <input type="text" id="daily-input" placeholder="Enter daily task">
-    <button onclick="addGoal('daily')">Add</button>
-    <ul id="daily-list"></ul>
+    <!-- Yearly -->
+    <div id="yearly" class="tab-content active">
+      <h2>Yearly Goals</h2>
+      <input type="text" id="yearly-input" placeholder="Enter yearly goal">
+      <button onclick="addGoal('yearly')">Add</button>
+      <ul id="yearly-list"></ul>
+    </div>
+
+    <!-- Monthly -->
+    <div id="monthly" class="tab-content">
+      <h2>Monthly Goals</h2>
+      <input type="text" id="monthly-input" placeholder="Enter monthly goal">
+      <button onclick="addGoal('monthly')">Add</button>
+      <ul id="monthly-list"></ul>
+    </div>
+
+    <!-- Weekly -->
+    <div id="weekly" class="tab-content">
+      <h2>Weekly Goals</h2>
+      <input type="text" id="weekly-input" placeholder="Enter weekly goal">
+      <button onclick="addGoal('weekly')">Add</button>
+      <ul id="weekly-list"></ul>
+    </div>
+
+    <!-- Daily -->
+    <div id="daily" class="tab-content">
+      <h2>Daily Tasks</h2>
+      <input type="text" id="daily-input" placeholder="Enter daily task">
+      <button onclick="addGoal('daily')">Add</button>
+      <ul id="daily-list"></ul>
+    </div>
   </div>
 
   <script>
-    // Open tab
+    // -------------------- PASSWORD SYSTEM --------------------
+    const passwordScreen = document.getElementById("password-screen");
+    const tracker = document.getElementById("tracker");
+    const passwordInput = document.getElementById("password-input");
+    const passwordMessage = document.getElementById("password-message");
+
+    const savedPassword = localStorage.getItem("goalPassword");
+
+    // If no password, ask to set one
+    if (!savedPassword) {
+      passwordMessage.innerText = "Set a new password to protect your goals:";
+    } else {
+      passwordMessage.innerText = "Enter your password to continue:";
+    }
+
+    function checkPassword() {
+      const input = passwordInput.value.trim();
+      if (!input) return alert("Please enter a password!");
+
+      if (!savedPassword) {
+        localStorage.setItem("goalPassword", input);
+        alert("Password set successfully!");
+        showTracker();
+      } else if (input === savedPassword) {
+        showTracker();
+      } else {
+        alert("Incorrect password!");
+      }
+    }
+
+    function showTracker() {
+      passwordScreen.style.display = "none";
+      tracker.style.display = "block";
+    }
+
+    
+
+    // -------------------- GOAL TRACKER --------------------
     function openTab(tabName) {
       const tabs = document.querySelectorAll('.tab-content');
       const tabButtons = document.querySelectorAll('.tab');
@@ -66,7 +137,6 @@
       event.target.classList.add('active');
     }
 
-    // Add goal
     function addGoal(type) {
       const input = document.getElementById(`${type}-input`);
       const value = input.value.trim();
@@ -80,7 +150,6 @@
       renderGoals(type);
     }
 
-    // Remove goal
     function removeGoal(type, index) {
       let goals = JSON.parse(localStorage.getItem(type)) || [];
       goals.splice(index, 1);
@@ -88,7 +157,6 @@
       renderGoals(type);
     }
 
-    // Toggle complete
     function toggleComplete(type, index) {
       let goals = JSON.parse(localStorage.getItem(type)) || [];
       goals[index].completed = !goals[index].completed;
@@ -96,7 +164,6 @@
       renderGoals(type);
     }
 
-    // Render goals
     function renderGoals(type) {
       const list = document.getElementById(`${type}-list`);
       list.innerHTML = '';
@@ -109,8 +176,7 @@
       });
     }
 
-    // Load all goals on page load
-    ['monthly', 'weekly', 'daily'].forEach(renderGoals);
+    ['yearly', 'monthly', 'weekly', 'daily'].forEach(renderGoals);
   </script>
 
 </body>
